@@ -1,12 +1,12 @@
 const mysql = require("mysql");
 //local mysql db connection
-const dbConn = mysql.createConnection({
+const db_connection = mysql.createConnection({
   host: "localhost",
   user: "root",
   database: "customer_order1",
 });
-dbConn.connect(function (err) {
+db_connection.connect(function (err) {
   if (err) throw err;
   console.log("Database Connected!");
 });
-module.exports = dbConn;
+module.exports = db_connection;

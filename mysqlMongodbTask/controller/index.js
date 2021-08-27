@@ -1,33 +1,67 @@
-const Employee = require("../model/index");
-exports.findAll = function (req, res) {
-  Employee.findAll(function (err, employee) {
-    console.log("controller");
-    if (err) res.send(err);
-    console.log("res", employee);
-    res.send(employee);
-  });
-};
-exports.create = function (req, res) {
-  const new_employee = new Employee(req.body);
-  //handles null error
-  if (req.body.constructor === Object && Object.keys(req.body).length === 0) {
-    res
-      .status(400)
-      .send({ error: true, message: "Please provide all required field" });
-  } else {
-    Employee.create(new_employee, function (err, employee) {
-      if (err) res.send(err);
-      res.json({
-        error: false,
-        message: "Employee added successfully!",
-        data: employee,
-      });
+const db_connection = require("../config/index");
+
+// INSERTING Employees
+exports.insert = async (req, res, next) => {
+  if (!req.body.name || !req.body.email) {
+    return res.status(400).json({
+      message: "Please fill in all the required fields.",
+      fields: ["name", "email"],
     });
   }
+
+  try {
+    const [rows] = await db_connection.execute(
+      "INSERT INTO `employees`(`name`,`email`) VALUES(?, ?)",
+      [req.body.name, req.body.email]
+    );
+
+    if (rows.affectedRows === 1) {
+      return res.status(201).json({
+        message: "The employees has been successfully inserted.",
+        userID: rows.insertId,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
 };
-exports.findById = function (req, res) {
-  Employee.findById(req.params.id, function (err, employee) {
-    if (err) res.send(err);
-    res.json(employee);
-  });
+
+// FETCHING ALL USERS
+exports.getAllEmployees = async (req, res, next) => {
+  try {
+    const [rows] = await db_connection.execute("SELECT * FROM `employees`");
+
+    if (rows.length === 0) {
+      return res.status(200).json({
+        message:
+          "There are no employees in the database, please insert some users.",
+      });
+    }
+
+    res.status(200).json(rows);
+  } catch (err) {
+    next(err);
+  }
 };
+
+// FETCHING SINGLE USER
+exports.getEmployeesByID = async (req, res, next) => {
+  try {
+    const [row] = await db_connection.execute(
+      "SELECT * FROM `employees` WHERE `id`=?",
+      [req.params.id]
+    );
+
+    if (row.length === 0) {
+      return res.status(404).json({
+        message: "No employees Found!",
+      });
+    }
+
+    res.status(200).json(row[0]);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// UPDATING USER

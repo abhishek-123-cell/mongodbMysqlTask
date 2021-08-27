@@ -1,11 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const employeeController = require("../controller/index");
-// Retrieve all employees
-router.get("/findAll", employeeController.findAll);
-// Create a new employee
-router.post("/create", employeeController.create);
-// Retrieve a single employee with id
-router.get("/:id", employeeController.findById);
+const validators = require("../validator/index");
+const EmployeesController = require("../controller/index");
 
+// Inserting User
+router.post(
+  "/insertEmployees",
+  validators.userInfo,
+  validators.result,
+  EmployeesController.insert
+);
+
+// Fetching all employess
+router.get("/allEmployees", EmployeesController.getAllEmployees);
+
+// Fetching Single User By ID
+router.get(
+  "/getEmployees/:id",
+  validators.userID,
+  validators.result,
+  EmployeesController.getEmployeesByID
+);
 module.exports = router;

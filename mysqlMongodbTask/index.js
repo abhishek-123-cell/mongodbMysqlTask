@@ -1,22 +1,24 @@
-const bodyParser = require("body-parser");
-// create express app
 const express = require("express");
 const app = express();
-// Setup server port
-const port = process.env.PORT || 5000;
-// parse requests of content-type - application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
-// parse requests of content-type - application/json
+const bodyParser = require("body-parser");
 app.use(bodyParser.json());
-// define a root route
-app.get("/", (req, res) => {
-  res.send("Hello World");
+app.use(bodyParser.urlencoded({ extended: true }));
+const Routes = require("./routes");
+
+// It parses incoming requests with JSON payloads
+app.use(express.json());
+
+// Applying All Routes
+app.use("/api", Routes);
+
+// Handling Errors
+app.use((err, req, res, next) => {
+  // console.log(err);
+  err.statusCode = err.statusCode || 500;
+  err.message = err.message || "Internal Server Error";
+  res.status(err.statusCode).json({
+    message: err.message,
+  });
 });
-// Require employee routes
-const employeeRoutes = require("./routes/index");
-// using as middleware
-app.use("/api/v1/employees", employeeRoutes);
-// listen for requests
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
-});
+
+app.listen(3004, () => console.log("Server is running on port 3004"));
